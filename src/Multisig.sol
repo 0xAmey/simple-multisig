@@ -4,6 +4,9 @@ pragma solidity ^0.8.16;
 // error SimpleMultisig__
 
 contract Multisig {
+    //---------------------------------------//
+    //                Events                 //
+    //---------------------------------------//
     event Deposit(address indexed sender, uint256 amount);
     event Submit(uint256 indexed txId);
     event Approve(address indexed owner, uint256 indexed txId);
@@ -18,11 +21,44 @@ contract Multisig {
     }
 
     address[] public owners;
+
+    // Returns true if an address is an owner of the wallet
     mapping(address => bool) isOwner;
+    // The number of approvals reuired for a txn to be executed
     uint256 public required;
 
     Transaction[] public transactions;
+
+    // Storing the approval of each transaction by each owner in this mapping
     mapping(uint256 => mapping(address => bool)) public approved;
+
+    //---------------------------------------//
+    //              Constructor              //
+    //---------------------------------------//
+
+    constructor(address[] memory _owners, uint256 _required) {
+        // require atleast one owner
+        require(_owners.length > 0, "Owner(s) Required");
+        require(
+            _required > 0 && _required <= _owners.length,
+            "Invalid Required Number of Owners"
+        );
+
+        for (uint256 i; i < _owners.length; i++) {
+            address owner = _owners[i];
+            require(owner != address(0), "Invalid Owner");
+            require(!isOwner[owner], "Owner is not unique");
+
+            isOwner[owner] = true;
+            owners.push(owner);
+        }
+
+        required = _required;
+    }
+
+    //---------------------------------------//
+    //              Modifiers                //
+    //---------------------------------------//
 
     modifier onlyOwner() {
         require(isOwner[msg.sender], "Now Owner");
@@ -44,24 +80,9 @@ contract Multisig {
         _;
     }
 
-    constructor(address[] memory _owners, uint256 _required) {
-        require(_owners.length > 0, "Owner(s) Required");
-        require(
-            _required > 0 && _required <= _owners.length,
-            "Invalid Required Number of Owners"
-        );
-
-        for (uint256 i; i < _owners.length; i++) {
-            address owner = _owners[i];
-            require(owner != address(0), "Invalid Owner");
-            require(!isOwner[owner], "Owner is not unique");
-
-            isOwner[owner] = true;
-            owners.push(owner);
-        }
-
-        required = _required;
-    }
+    //---------------------------------------//
+    //              Function                 //
+    //---------------------------------------//
 
     function recieve() external payable {
         emit Deposit(msg.sender, msg.value);
