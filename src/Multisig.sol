@@ -56,12 +56,16 @@ contract Multisig {
         required = _required;
     }
 
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
     //---------------------------------------//
     //              Modifiers                //
     //---------------------------------------//
 
     modifier onlyOwner() {
-        require(isOwner[msg.sender], "Now Owner");
+        require(isOwner[msg.sender], "Not Owner");
         _;
     }
 
@@ -81,12 +85,8 @@ contract Multisig {
     }
 
     //---------------------------------------//
-    //              Function                 //
+    //              Functions                //
     //---------------------------------------//
-
-    function recieve() external payable {
-        emit Deposit(msg.sender, msg.value);
-    }
 
     function submit(
         address _to,
