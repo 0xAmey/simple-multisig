@@ -30,6 +30,8 @@ contract MultisigTest is Test {
         owners.push(address(this));
         required = 2;
         multisig = new Multisig(owners, required);
+        (bool success, ) = address(multisig).call{value: 10 ether}("");
+        require(success, "Couldn't send money to Multisig contract");
     }
 
     function testConstructorInitializesCorrectly() public {
@@ -73,5 +75,37 @@ contract MultisigTest is Test {
         multisig.submit(address(owner1), 1 ether, "");
         multisig.approve(0);
         assertEq(multisig.getApprovalCount(0), 1);
+    }
+
+    function testProperlyExecutesTransaction() public {
+        vm.prank(owner1);
+        multisig.submit(user1, 1 ether, "");
+
+        vm.prank(owner1);
+        multisig.approve(0);
+
+        vm.prank(owner2);
+        multisig.approve(0);
+
+        vm.expectEmit(true, false, false, false);
+        emit Execute(0);
+        multisig.execute(0);
+    }
+
+    function testCanRevoke() public {
+        vm.prank(owner1);
+        multisig.submit(user1, 1 ether, "");
+
+        vm.prank(owner1);
+        multisig.approve(0);
+
+        vm.prank(owner2);
+        multisig.approve(0);
+
+        vm.prank(owner1);
+        multisig.revoke(0);
+
+        vm.expectRevert("Approvals < required");
+        multisig.execute(0);
     }
 }
