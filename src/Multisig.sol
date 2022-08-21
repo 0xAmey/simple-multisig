@@ -111,11 +111,11 @@ contract Multisig {
     }
 
     function getApprovalCount(uint256 _txId)
-        private
+        public
         view
         returns (uint256 count)
     {
-        for (uint i; i < owners.length; i++) {
+        for (uint256 i; i < owners.length; i++) {
             if (approved[_txId][owners[i]]) {
                 count += 1;
             }
@@ -149,5 +149,17 @@ contract Multisig {
         require(approved[_txId][msg.sender], "Tx not approved");
         approved[_txId][msg.sender] = false;
         emit Revoke(msg.sender, _txId);
+    }
+
+    //---------------------------------------//
+    //                Getters                //
+    //---------------------------------------//
+
+    function getApprovalStatus(uint256 _txId, address _owner)
+        public
+        view
+        returns (bool isApproved)
+    {
+        return approved[_txId][_owner];
     }
 }
