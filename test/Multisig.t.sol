@@ -14,7 +14,8 @@ contract MultisigTest is Test {
     address[] public owners;
     uint8 public required;
 
-    //event Deposit(address sender, uint256 amount);
+    event Deposit(address indexed sender, uint256 amount);
+    event Submit(uint256 indexed txId);
 
     function setUp() public {
         owner1 = address(0x1);
@@ -35,12 +36,10 @@ contract MultisigTest is Test {
     }
 
     function testCanRecieveEther() public {
+        vm.expectEmit(true, true, false, false);
+        emit Deposit(address(this), 1 ether);
         (bool success, ) = address(multisig).call{value: 1 ether}("");
         assertEq(success, true);
-
-        //vm.expectEmit(true, true);
-        //emit Deposit(address(this), 1 ether);
-        //(bool success2, ) = address(multisig).call{value: 1 ether}("");
     }
 
     function testOnlyOwnerCanSubmit() public {
@@ -51,16 +50,9 @@ contract MultisigTest is Test {
 
     function testCanSubmitTransaction() public {
         vm.prank(owner1);
+        vm.expectEmit(true, false, false, false);
+        emit Submit(0);
         multisig.submit(address(owner2), 1 ether, "");
-        // submitTransaction = Multisig.Transaction({
-        //     to: owner2,
-        //     value: 1 ether,
-        //     data: "",
-        //     executed: false
-        // });
-        // assertEq(multisig.transactions(0), submitTransaction);
-        // vm.expectEmit(false);
-        // emit Submit(0);
     }
 
     function testCanApproveTransaction() public {
