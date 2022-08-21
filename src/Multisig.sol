@@ -154,12 +154,4 @@ contract Multisig {
     //---------------------------------------//
     //                Getters                //
     //---------------------------------------//
-
-    function getApprovalStatus(uint256 _txId, address _owner)
-        public
-        view
-        returns (bool isApproved)
-    {
-        return approved[_txId][_owner];
-    }
 }

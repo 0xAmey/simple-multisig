@@ -51,7 +51,7 @@ contract MultisigTest is Test {
         multisig.submit(address(user2), 1 ether, "");
     }
 
-    function testCanSubmitTransaction() public {
+    function testOwnerCanSubmitTransaction() public {
         vm.prank(owner1);
         vm.expectEmit(true, false, false, false);
         emit Submit(0);
@@ -59,9 +59,14 @@ contract MultisigTest is Test {
     }
 
     function testCanApproveTransaction() public {
-        multisig.submit(address(owner1), 1 ether, "");
+        vm.startPrank(owner1);
+        multisig.submit(user1, 1 ether, "");
+
+        vm.expectEmit(true, true, false, false);
+        emit Approve(owner1, 0);
         multisig.approve(0);
-        assertEq(multisig.getApprovalStatus(0, address(this)), true);
+
+        vm.stopPrank();
     }
 
     function testCorrectlyRecordsApprovalCount() public {
